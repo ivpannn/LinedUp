@@ -12,6 +12,7 @@ app.use(express.json());
 
 // all auth routers start with "/..."
 // router.post("/register") -> /auth/register
+// router.post("/joinQueue") -> /auth/joinQueuegit 
 app.use("/auth", authRoutes);
 app.use("/queue", queueRoutes);
 

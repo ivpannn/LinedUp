@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 
 import prisma  from '../utils/prisma';
 
+// check and create user
 export const register = async (req: Request, res: Response) => {
     try {
         const { name, email, password } = req.body;
