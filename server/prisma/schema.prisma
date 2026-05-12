@@ -13,4 +13,26 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+
+  queues Queue[] //one user can have many queue records
+}
+
+model Queue {
+  id          String      @id @default(cuid())
+  queueNumber Int
+  status      QueueStatus @default(WAITING)
+
+  joinedAt DateTime @default(now())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+}
+
+//allowed status values
+enum QueueStatus {
+  WAITING
+  SERVING
+  COMPLETED
+  SKIPPED
+  LEFT
 }
