@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import prisma  from '../utils/prisma';
+import prisma from '../utils/prisma';
 
 // check and create user
 export const register = async (req: Request, res: Response) => {
@@ -18,7 +18,7 @@ export const register = async (req: Request, res: Response) => {
         // return res.status(201).json({
         //     message: "debug"
         // });
-        
+
         if (existingUser) {
             return res.status(400).json({
                 message: "User already exists",
@@ -91,6 +91,7 @@ export const login = async (req: Request, res: Response) => {
             token,
         });
     } catch (error) {
+        console.log(error)
         return res.status(500).json({
             message: "Server error",
         });
