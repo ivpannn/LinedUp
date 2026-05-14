@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 
 import { API } from "@/src/services/api"
+import { router } from "expo-router";
 
 const Register = () => {
     const [name, setName] = useState("");
@@ -16,7 +17,7 @@ const Register = () => {
                 password,
             });
 
-            alert("Register success")
+            router.replace("/(auth)/login");
         } catch (error) {
             alert("Register unsuccessful")
         }

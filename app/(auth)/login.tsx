@@ -12,18 +12,22 @@ const Login = () => {
     const handleLogin = async () => {
         try {
             const response = await API.post("auth/login", {
-                email,
-                password,
+                email: email.toLowerCase().trim(),
+                password: password.trim(),
             });
             console.log('qwe')
 
             await saveToken(response.data.token);
             console.log("123")
 
-            alert("Login successful");
-        } catch (error) {
-            console.log(error);
-            alert("Login unsuccessful")
+            router.replace("/(tabs)/home");
+        } catch (error: any) {
+            console.log(
+                "LoGIN ERROR: ", error.response?.data || error.message
+            );
+            alert(
+                error.response?.data.message || "Login unsuccessful"
+            );
         }
     };
 
