@@ -3,16 +3,24 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
-// import Restaurants from "@/components/restaurant"; // TODO: Define your restaurant type
+import RestaurantCard from "@/components/restaurantCard"; // TODO: Define your restaurant type
 
 // TODO: Replace with your restaurant data structure
 interface Restaurant {
     id: string;
+    image: string;
     name: string;
     location: string;
     cuisineType: string;
     estimatedWait: number; // in minutes
 }
+
+const restaurant = [
+    { id: '1', image: require("../../assets/images/hdl-pav-bj.jpg"), name: 'Hai Di Lao', location: 'Pavilion Bukit Jalil', cuisineType: 'Hotpot', estimatedWait: 30 },
+    { id: '2', image: require("../../assets/images/shin-zushi.webp"), name: 'Shin zushi', location: 'Jalan Jalil Jaya 7 Jalil Link, Bukit Jalil, 57000 Kuala Lumpur', cuisineType: 'Sushi', estimatedWait: 45 },
+    { id: '3', image: require("../../assets/images/oriental-kopi.webp"), name: 'Oriental Kopi', location: 'Mid Valley MegaMall', cuisineType: 'Cafe', estimatedWait: 15 },
+    { id: '4', image: require("../../assets/images/village-park.jpg"), name: 'Village Park Restaurant', location: 'Petaling Jaya', cuisineType: 'Nasi Lemak', estimatedWait: 25 },
+];
 
 const Main = () => {
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -28,7 +36,7 @@ const Main = () => {
                 // setRestaurants(response.data);
 
                 // Placeholder data - replace with real data
-                setRestaurants([]);
+                setRestaurants(restaurant);
             } catch (error) {
                 console.log("Error loading restaurants:", error);
             } finally {
@@ -51,7 +59,7 @@ const Main = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Restaurants</Text>
+            <Text style={styles.title}>LinedUp</Text>
 
             {loading ? (
                 <Text style={styles.loadingText}>Loading restaurants...</Text>
@@ -63,17 +71,9 @@ const Main = () => {
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <View style={styles.restaurantCard}>
-                            <Text style={styles.restaurantName}>{item.name}</Text>
-                            <Text style={styles.restaurantInfo}>{item.location}</Text>
-                            <Text style={styles.restaurantInfo}>{item.cuisineType}</Text>
-                            <Text style={styles.waitTime}>Est. Wait: {item.estimatedWait} min</Text>
-
-                            <Pressable
-                                style={styles.queueButton}
-                                onPress={() => handleQueuePress(item.id)}
-                            >
-                                <Text style={styles.buttonText}>Join Queue</Text>
-                            </Pressable>
+                            <RestaurantCard
+                                restaurant={item}
+                            />
                         </View>
                     )}
                 />
