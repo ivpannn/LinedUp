@@ -5,6 +5,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes";
 import queueRoutes from "./routes/queue.routers";
 import prisma from "./utils/prisma";
+import adminRouter from "./routes/admin.routes";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // router.post("/joinQueue") -> /queue/joinQueue
 app.use("/auth", authRoutes);
 app.use("/queue", queueRoutes);
+app.use("/admin", adminRouter);
 
 app.get("/", (req, res) => {
   res.send("QueueSnap API Running");

@@ -1,6 +1,6 @@
 import { saveToken } from "@/src/storage/token";
-import { useState } from "react";
 import { router } from 'expo-router';
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { API } from "../../src/services/api";
 
@@ -18,9 +18,13 @@ const Login = () => {
             console.log('qwe')
 
             await saveToken(response.data.token);
-            console.log("123")
 
-            router.replace("/(tabs)/home");
+            // Navigate to appropriate screen based on role
+            if (response.data.user?.role === "ADMIN") {
+                router.replace("/(tabs)/queuing");
+            } else {
+                router.replace("/(tabs)/main");
+            }
         } catch (error: any) {
             console.log(
                 "LoGIN ERROR: ", error.response?.data || error.message

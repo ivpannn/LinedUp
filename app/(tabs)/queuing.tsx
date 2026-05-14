@@ -5,11 +5,13 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { API } from "@/src/services/api";
 import { getToken, removeToken } from "@/src/storage/token";
 
-const Home = () => {
+const Queuing = () => {
 
     const [queues, setQueues] = useState<any[]>([]);
     const [myQueue, setMyQueue] = useState<any>(null);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
 
     // get all queues
     const fetchQueues = async () => {
@@ -118,6 +120,7 @@ const Home = () => {
 
                     const decoded = JSON.parse(jsonPayload);
                     setCurrentUserId(decoded.userId);
+                    setIsAdmin(decoded.role === "ADMIN");
                 } catch (error) {
                     console.log("Error decoding token:", error);
                     router.push("/(auth)/login");
@@ -134,6 +137,14 @@ const Home = () => {
         if (currentUserId) {
             fetchQueues();
             fetchMyQueue();
+
+            // Auto-refresh every 2 seconds
+            const interval = setInterval(() => {
+                fetchQueues();
+                fetchMyQueue();
+            }, 2000);
+
+            return () => clearInterval(interval);
         }
     }, [currentUserId])
 
@@ -181,6 +192,15 @@ const Home = () => {
                 )}
             />
 
+            {isAdmin && (
+                <Pressable
+                    style={styles.adminButton}
+                    onPress={() => router.push("/(tabs)/adminScreen")}
+                >
+                    <Text style={styles.buttonText}>Admin Dashboard</Text>
+                </Pressable>
+            )}
+
             <Pressable
                 style={styles.logoutButton}
                 onPress={logout}
@@ -191,7 +211,7 @@ const Home = () => {
     );
 }
 
-export default Home;
+export default Queuing;
 
 const styles = StyleSheet.create({
     container: {
@@ -240,11 +260,18 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
 
+    adminButton: {
+        backgroundColor: "#1e90ff",
+        padding: 15,
+        borderRadius: 10,
+        marginTop: 10,
+    },
+
     logoutButton: {
         backgroundColor: "#333",
         padding: 15,
         borderRadius: 10,
-        marginTop: 20,
+        marginTop: 10,
     },
 
     buttonText: {
