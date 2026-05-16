@@ -60,41 +60,11 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="map"
-                options={{
-                    title: "Map",
-                    href: isAdmin ? null : undefined,
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="map" size={size} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="ratings"
-                options={{
-                    title: "Ratings",
-                    href: isAdmin ? null : undefined,
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="star" size={size} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
                 name="queuing"
                 options={{
                     title: "Queue",
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="list" size={size} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="profile"
-                options={{
-                    title: "Profile",
-                    href: isAdmin ? null : undefined,
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="person" size={size} color={color} />
                     ),
                 }}
             />
