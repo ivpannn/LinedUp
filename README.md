@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# LinedUp
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile queue management app that lets users join restaurant queues remotely and allows admins to manage queue flow in real time.
 
-## Get started
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+### User
+- Register and Login
+- Browse restaurants with estimated wait times
+- Join queue system
+- Queue cancellation
+- Queue status tracking
+- View your queue number and estimated wait time
 
-2. Start the app
+### Admin
+- View all active queues for the day
+- Call the next queue in line
+- Mark a queue as completed
+- View completed queues for the day
+- Queue numbers reset automatically every day at midnight
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+Frontend:
+- React Native Expo
+- TypeScript
+- Axios
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Backend:
+- Node.js
+- Express
+- Prisma ORM
+- PostgreSQL
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Installation
 
-## Get a fresh project
+### Backend
 
-When you're ready, run:
+cd server
 
-```bash
-npm run reset-project
-```
+npm install
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+npx prisma migrate dev
 
-## Learn more
+npm run dev
 
-To learn more about developing your project with Expo, look at the following resources:
+### Mobile
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+cd mobile
 
-## Join the community
+npm install
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+npx expo start
