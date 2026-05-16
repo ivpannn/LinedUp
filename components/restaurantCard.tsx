@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 interface Restaurant {
@@ -7,41 +6,40 @@ interface Restaurant {
     name: string;
     location: string;
     cuisineType: string;
-    estimatedWait: number; // in minutes
+    estimatedWait: number;
 }
 
-const RestaurantCard = ({ restaurant }: { restaurant: Restaurant }) => {
-
-    const handleQueuePress = (restaurantId: string) => {
-        // TODO: Store selected restaurant ID and navigate to queuing page
-        router.push("/(tabs)/queuing");
-    };
+const RestaurantCard = ({
+    restaurant,
+    onPress,
+    isAdmin
+}: {
+    restaurant: Restaurant;
+    onPress: () => void;
+    isAdmin: boolean;
+}) => {
 
     return (
         <View style={styles.card}>
-            <View style={styles.column}>
+            <View style={styles.content}>
                 <Image
                     source={restaurant.image}
                     style={styles.image}
                     resizeMode="cover"
                 />
-                <View style={styles.row}>
+                <View style={styles.info}>
                     <Text style={styles.name}>{restaurant.name}</Text>
-                    <Text style={styles.details}>{restaurant.location}</Text>
+                    <Text style={styles.details} numberOfLines={1}>{restaurant.location}</Text>
                     <Text style={styles.details}>{restaurant.cuisineType}</Text>
-                    <Text style={styles.wait}>Estimated Wait: {restaurant.estimatedWait} mins</Text>
+                    <Text style={styles.wait}>Est: {restaurant.estimatedWait} mins</Text>
                 </View>
             </View>
 
-            <Pressable
-                style={styles.queueButton}
-                onPress={() => {
-                    console.log("Pressed");
-                    handleQueuePress(restaurant.id);
-                }}
-            >
-                <Text style={styles.buttonText}>Join queue</Text>
-            </Pressable>
+            {!isAdmin && (
+                <Pressable style={styles.queueButton} onPress={onPress}>
+                    <Text style={styles.buttonText}>Join</Text>
+                </Pressable>
+            )}
         </View>
     );
 }
@@ -50,10 +48,13 @@ export default RestaurantCard;
 
 const styles = StyleSheet.create({
     card: {
-        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
 
-    column: {
+    content: {
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
     },
@@ -64,44 +65,41 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
 
-    row: {
+    info: {
         flex: 1,
         marginLeft: 15,
     },
 
     name: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
-        marginVertical: 5,
+        marginBottom: 5,
     },
 
     details: {
-        fontSize: 14,
-        color: '#555',
+        fontSize: 13,
+        color: '#666',
+        marginBottom: 3,
     },
 
     wait: {
-        justifyContent: 'center',
-        margin: 10,
-        marginLeft: 0,
-        fontSize: 16,
-        color: 'red',
+        fontSize: 14,
+        color: '#e30808',
         fontWeight: 'bold',
+        marginTop: 8,
     },
 
     queueButton: {
-        justifyContent: 'center',
-        alignSelf: 'flex-end',
-        borderWidth: 1,
-        borderRadius: 5,
-        borderColor: 'green',
         backgroundColor: '#11ae09',
-        paddingVertical: 3,
-        paddingHorizontal: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 8,
+        marginLeft: 10,
     },
 
     buttonText: {
-        color: 'white',
+        color: '#fff',
         fontWeight: 'bold',
+        fontSize: 13,
     },
 });

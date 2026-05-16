@@ -1,6 +1,6 @@
 import Login from "@/app/(auth)/login";
 import Register from "@/app/(auth)/register";
-import Home from "@/app/(tabs)/home";
+import Home from "@/app/(tabs)/main";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 

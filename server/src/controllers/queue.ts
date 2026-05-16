@@ -1,117 +1,115 @@
 import { Response } from "express";
+import { AuthRequest } from "../middleware/auth.middleware";
 import prisma from "../utils/prisma";
 
-import { AuthRequest } from "../middleware/auth.middleware";
+const getStartOfDay = (): Date => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return start;
+};
 
-// join queue
-export const joinQueue = async (req: AuthRequest, res: Response,) => {
+export const joinQueue = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.userId!;
+        const { restaurantId } = req.body;
 
-        // check existing active queue (gets first matching db record)
+        if (!restaurantId) {
+            return res.status(400).json({ message: "restaurantId is required" });
+        }
+
+        const restaurant = await prisma.restaurant.findUnique({
+            where: { id: restaurantId },
+        });
+
+        if (!restaurant) {
+            return res.status(404).json({ message: "Restaurant not found" });
+        }
+
+        // Check across ALL days, not just today — prevents ghost blocks from old records
         const existingQueue = await prisma.queue.findFirst({
             where: {
                 userId,
-                status: "WAITING",
+                status: { in: ["WAITING", "SERVING"] },
             },
         });
 
-        // prevent user joining many times
         if (existingQueue) {
-            return res.status(400).json({
-                message: "Already in queue",
-            });
+            return res.status(400).json({ message: "Already in queue" });
         }
 
-        // latest queue number
-        const lastestQueue = await prisma.queue.findFirst({
-            orderBy: {
-                queueNumber: 'desc',
+        const todayCount = await prisma.queue.count({
+            where: {
+                restaurantId,
+                joinedAt: { gte: getStartOfDay() },
             },
         });
 
-        // new queue number
-        const nextQueueNumber = lastestQueue ? lastestQueue.queueNumber + 1 : 1;
+        const nextQueueNumber = todayCount + 1;
 
-        // create queue
         const queue = await prisma.queue.create({
             data: {
                 queueNumber: nextQueueNumber,
-                userId: userId!, // ! = guarantee this exists
+                userId,
+                restaurantId,
+            },
+            include: {
+                restaurant: { select: { name: true } },
             },
         });
 
-        return res.status(201).json({
-            message: "Joined queue",
-            queue,
-        })
+        return res.status(201).json({ message: "Joined queue", queue });
     } catch (error) {
-        return res.status(500).json({
-            message: "Server error",
-        });
+        console.log("joinQueue error:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
-// cancel queue (Left)
 export const leaveQueue = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.userId!;
 
+        // Include SERVING so user is never stuck
         const queue = await prisma.queue.findFirst({
             where: {
                 userId,
-                status: "WAITING",
+                status: { in: ["WAITING", "SERVING"] },
             },
         });
 
         if (!queue) {
-            return res.status(404).json({
-                message: "Queue not found",
-            });
+            return res.status(404).json({ message: "Queue not found" });
         }
 
         const updatedQueue = await prisma.queue.update({
-            where: {
-                id: queue.id,
-            },
-            data: {
-                status: "LEFT",
-            },
-
+            where: { id: queue.id },
+            data: { status: "LEFT" },
         });
 
-        return res.status(200).json({
-            message: "Left queue",
-            updatedQueue,
-        })
+        return res.status(200).json({ message: "Left queue", updatedQueue });
     } catch (error) {
-        return res.status(500).json({
-            message: "Server error",
-        });
+        return res.status(500).json({ message: "Server error" });
     }
 };
 
-// get all queue
 export const getQueue = async (req: AuthRequest, res: Response) => {
     try {
+        const { restaurantId } = req.query;
+
         const queue = await prisma.queue.findMany({
             where: {
-                status: "WAITING",
+                status: { in: ["WAITING", "SERVING"] },
+                joinedAt: { gte: getStartOfDay() },
+                ...(restaurantId ? { restaurantId: String(restaurantId) } : {}),
             },
             include: {
-                user: true, //also return user info
+                user: { select: { id: true, name: true } },
+                restaurant: { select: { name: true } },
             },
-            orderBy: {
-                queueNumber: "asc",
-            },
+            orderBy: { queueNumber: "asc" },
         });
 
-        return res.status(200).json({
-            queue,
-        });
+        return res.status(200).json({ queue });
     } catch (error) {
-        return res.status(500).json({
-            message: "Server error",
-        });
+        return res.status(500).json({ message: "Server error" });
     }
 };

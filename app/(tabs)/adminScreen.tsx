@@ -110,17 +110,19 @@ const AdminScreen = () => {
                     <View style={styles.card}>
                         <View>
                             <Text style={styles.queueNumberText}>Queue #{item.queueNumber}</Text>
-                            <Text style={[styles.statusText, item.status === "SERVING" ? styles.servingStatus : styles.waitingStatus]}>
+                            <Text style={styles.restaurantName}>
+                                {item.restaurant?.name ?? "Unknown Restaurant"}
+                            </Text>
+                            <Text style={[
+                                styles.statusText,
+                                item.status === "SERVING" ? styles.servingStatus : styles.waitingStatus
+                            ]}>
                                 {item.status}
                             </Text>
                             <Text style={styles.userName}>{item.user?.name || "Unknown"}</Text>
                         </View>
-
                         {item.status === "SERVING" && (
-                            <Pressable
-                                style={styles.completeButton}
-                                onPress={() => completeQueue(item.id)}
-                            >
+                            <Pressable style={styles.completeButton} onPress={() => completeQueue(item.id)}>
                                 <Text style={styles.buttonText}>Complete</Text>
                             </Pressable>
                         )}
@@ -137,7 +139,10 @@ const AdminScreen = () => {
                         renderItem={({ item }) => (
                             <View style={[styles.card, styles.completedCard]}>
                                 <View>
-                                    <Text style={styles.queueNumberText}>Queue #{item.queueNumber}</Text>
+                                    <Text style={styles.queueNumberText}>#{item.queueNumber}</Text>
+                                    <Text style={styles.restaurantName}>
+                                        {item.restaurant?.name ?? "Unknown Restaurant"}
+                                    </Text>
                                     <Text style={styles.completedStatusText}>COMPLETED</Text>
                                     <Text style={styles.userName}>{item.user?.name || "Unknown"}</Text>
                                 </View>
@@ -208,6 +213,13 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 5,
+    },
+
+    restaurantName: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#333",
+        marginBottom: 3,
     },
 
     statusText: {

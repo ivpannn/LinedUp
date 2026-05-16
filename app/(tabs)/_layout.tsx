@@ -1,16 +1,8 @@
 import { getToken } from "@/src/storage/token";
 import { Ionicons } from "@expo/vector-icons";
-import { BottomTabNavigationOptions, createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Tabs } from "expo-router";
 import { useEffect, useState } from "react";
-
-import AdminScreen from "./adminScreen";
-import Main from "./main";
-import Map from "./map";
-import Rating from "./ratings";
-import Queuing from "./queuing";
-import Profile from "./profile";
-
-const Tab = createBottomTabNavigator();
+import { View, ActivityIndicator } from "react-native";
 
 export default function TabLayout() {
     const [isAdmin, setIsAdmin] = useState(false);
@@ -23,10 +15,11 @@ export default function TabLayout() {
                 if (token) {
                     const base64Url = token.split('.')[1];
                     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-
+                    const jsonPayload = decodeURIComponent(
+                        atob(base64).split('').map((c) =>
+                            '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                        ).join('')
+                    );
                     const decoded = JSON.parse(jsonPayload);
                     setIsAdmin(decoded.role === "ADMIN");
                 }
@@ -36,91 +29,85 @@ export default function TabLayout() {
                 setIsLoading(false);
             }
         };
-
         checkUserRole();
     }, []);
 
     if (isLoading) {
-        return null;
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
     }
 
-    const tabScreenOptions: BottomTabNavigationOptions = {
-        headerShown: false,
-        tabBarActiveTintColor: "#000",
-        tabBarInactiveTintColor: "#999",
-    };
-
     return (
-        <Tab.Navigator screenOptions={tabScreenOptions}>
-            {isAdmin ? (
-                // Admin navigation
-                <>
-                    <Tab.Screen
-                        name="queuing"
-                        component={Queuing}
-                        options={{
-                            title: "Queue",
-                            tabBarIcon: ({ color, size }) => (
-                                <Ionicons name="list" size={size} color={color} />
-                            ),
-                        }}
-                    />
-                    <Tab.Screen
-                        name="adminScreen"
-                        component={AdminScreen}
-                        options={{
-                            title: "Dashboard",
-                            tabBarIcon: ({ color, size }) => (
-                                <Ionicons name="settings" size={size} color={color} />
-                            ),
-                        }}
-                    />
-                </>
-            ) : (
-                // User navigation
-                <>
-                    <Tab.Screen
-                        name="main"
-                        component={Main}
-                        options={{
-                            title: "Home",
-                            tabBarIcon: ({ color, size }) => (
-                                <Ionicons name="restaurant" size={size} color={color} />
-                            ),
-                        }}
-                    />
-                    <Tab.Screen
-                        name="map"
-                        component={Map}
-                        options={{
-                            title: "Map",
-                            tabBarIcon: ({ color, size }) => (
-                                <Ionicons name="map" size={size} color={color} />
-                            ),
-                        }}
-                    />
-                    <Tab.Screen
-                        name="rating"
-                        component={Rating}
-                        options={{
-                            title: "Ratings",
-                            tabBarIcon: ({ color, size }) => (
-                                <Ionicons name="star" size={size} color={color} />
-                            ),
-                        }}
-                    />
-                    <Tab.Screen
-                        name="profile"
-                        component={Profile}
-                        options={{
-                            title: "Profile",
-                            tabBarIcon: ({ color, size }) => (
-                                <Ionicons name="person" size={size} color={color} />
-                            ),
-                        }}
-                    />
-                </>
-            )}
-        </Tab.Navigator>
+        <Tabs
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: "#000",
+                tabBarInactiveTintColor: "#999",
+            }}
+        >
+            {/* Order matters — this is the rendered tab order */}
+            <Tabs.Screen
+                name="main"
+                options={{
+                    title: "Home",
+                    href: isAdmin ? null : undefined,
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="restaurant" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="map"
+                options={{
+                    title: "Map",
+                    href: isAdmin ? null : undefined,
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="map" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="ratings"
+                options={{
+                    title: "Ratings",
+                    href: isAdmin ? null : undefined,
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="star" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="queuing"
+                options={{
+                    title: "Queue",
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="list" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="profile"
+                options={{
+                    title: "Profile",
+                    href: isAdmin ? null : undefined,
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="person" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tabs.Screen
+                name="adminScreen"
+                options={{
+                    title: "Dashboard",
+                    href: isAdmin ? undefined : null,
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name="settings" size={size} color={color} />
+                    ),
+                }}
+            />
+        </Tabs>
     );
 }

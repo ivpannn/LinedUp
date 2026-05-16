@@ -17,13 +17,24 @@ model User {
   queues    Queue[]
 }
 
+model Restaurant {
+  id            String  @id @default(cuid())
+  name          String
+  location      String
+  cuisineType   String
+  estimatedWait Int     @default(15)
+  queues        Queue[]
+}
+
 model Queue {
-  id          String      @id @default(cuid())
-  queueNumber Int
-  status      QueueStatus @default(WAITING)
-  joinedAt    DateTime    @default(now())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
+  id           String      @id @default(cuid())
+  queueNumber  Int
+  status       QueueStatus @default(WAITING)
+  joinedAt     DateTime    @default(now())
+  userId       String
+  restaurantId String?
+  user         User        @relation(fields: [userId], references: [id])
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
 }
 
 enum QueueStatus {

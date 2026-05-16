@@ -2,22 +2,37 @@ import { Response } from "express";
 import { AuthRequest } from "../middleware/auth.middleware";
 import prisma from "../utils/prisma";
 
+const getStartOfDay = (): Date => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return start;
+};
+
 export const getAllQueues = async (req: AuthRequest, res: Response) => {
     try {
         const queues = await prisma.queue.findMany({
-            orderBy: {
-                queueNumber: "asc",
+            where: {
+                joinedAt: {
+                    gte: getStartOfDay()
+                },
             },
-
+            orderBy: {
+                queueNumber: "asc"
+            },
             include: {
-                user: true,
+                user: {
+                    select: { id: true, name: true }
+                },
+                restaurant: {
+                    select: { name: true }
+                },
             },
         });
 
         return res.json(queues);
     } catch (error) {
         return res.status(500).json({
-            message: "Failed to fecth queues",
+            message: "Failed to fetch queues"
         });
     }
 };
@@ -27,36 +42,36 @@ export const callNextQueue = async (req: AuthRequest, res: Response) => {
         const nextQueue = await prisma.queue.findFirst({
             where: {
                 status: "WAITING",
+                joinedAt: {
+                    gte: getStartOfDay()
+                },
             },
-
             orderBy: {
-                queueNumber: "asc",
+                queueNumber: "asc"
             },
         });
 
         if (!nextQueue) {
             return res.status(404).json({
-                message: "No waiting queue",
+                message: "No waiting queue"
             });
         }
 
         await prisma.queue.update({
             where: {
-                id: nextQueue.id,
+                id: nextQueue.id
             },
-
             data: {
-                status: "SERVING",
+                status: "SERVING"
             },
         });
 
         return res.json({
-            message: "Next queue called",
-            nextQueue,
+            message: "Next queue called", nextQueue
         });
     } catch (error) {
         return res.status(500).json({
-            message: "Failed to call next queue",
+            message: "Failed to call next queue"
         });
     }
 };
@@ -73,20 +88,19 @@ export const completeQueue = async (req: AuthRequest, res: Response) => {
 
         await prisma.queue.update({
             where: {
-                id,
+                id
             },
-
             data: {
-                status: "COMPLETED",
+                status: "COMPLETED"
             },
         });
 
         return res.json({
-            message: "Queue completed",
+            message: "Queue completed"
         });
     } catch (error) {
         return res.status(500).json({
-            message: "Failed to complete queue",
+            message: "Failed to complete queue"
         });
     }
 };
