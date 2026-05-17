@@ -20,7 +20,7 @@ app.use("/queue", queueRoutes);
 app.use("/admin", adminRouter);
 
 app.get("/", (req, res) => {
-  res.send("QueueSnap API Running");
+  res.send("LinedUp API Running");
 });
 
 app.get("/test", async (req, res) => {
