@@ -35,11 +35,11 @@ const RestaurantCard = ({
                 </View>
             </View>
 
-            {!isAdmin && (
+            {!isAdmin && ( // true render nothing 
                 <Pressable style={styles.queueButton} onPress={onPress}>
                     <Text style={styles.buttonText}>Join</Text>
                 </Pressable>
-            )}
+            )} 
         </View>
     );
 }

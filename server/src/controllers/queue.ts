@@ -25,17 +25,29 @@ export const joinQueue = async (req: AuthRequest, res: Response) => {
             return res.status(404).json({ message: "Restaurant not found" });
         }
 
+        // Only block if user has an active queue WITH a valid restaurantId
         // Check across ALL days, not just today — prevents ghost blocks from old records
         const existingQueue = await prisma.queue.findFirst({
             where: {
                 userId,
                 status: { in: ["WAITING", "SERVING"] },
+                restaurantId: { not: null },
             },
         });
 
         if (existingQueue) {
             return res.status(400).json({ message: "Already in queue" });
         }
+
+        // clean up any ghost records (null resutauratnId) for this user
+        await prisma.queue.updateMany({
+            where: {
+                userId,
+                status: { in: ["WAITING", "SERVING"] },
+                restaurantId: null,
+            },
+            data: { status: "LEFT" },
+        });
 
         const todayCount = await prisma.queue.count({
             where: {
@@ -57,7 +69,7 @@ export const joinQueue = async (req: AuthRequest, res: Response) => {
             },
         });
 
-        return res.status(201).json({ message: "Joined queue", queue });
+        return res.status(201).json({ message: "Joined queue", queue }); //return queue number
     } catch (error) {
         console.log("joinQueue error:", error);
         return res.status(500).json({ message: "Server error" });

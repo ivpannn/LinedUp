@@ -11,28 +11,30 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await API.post("auth/login", {
+            const response = await API.post("auth/login", { //sends POST request to /auth/login with email and password 
                 email: email.toLowerCase().trim(),
                 password: password.trim(),
             });
             console.log('qwe')
 
-            await saveToken(response.data.token);
+            //login will create a token
+            await saveToken(response.data.token); //server sends back JWT token
+            // saveToken() calls AsynceStorage.setItem('token', ...) to save it on the device permanently 
 
             // Navigate to appropriate screen based on role
-            if (response.data.user?.role === "ADMIN") {
+            if (response.data.user?.role === "ADMIN") { //? = if null, return undefined instead of crashing 
                 router.replace("/(tabs)/queuing");
             } else {
                 router.replace("/(tabs)/main");
             }
-        } catch (error: any) {
+        } catch (error: any) { //error catch block run instead
             console.log(
                 "LoGIN ERROR: ", error.response?.data || error.message
             );
             alert(
                 error.response?.data.message || "Login unsuccessful"
             );
-        }
+        } //every futher API call reads the token and sends it in headers
     };
 
     return (
@@ -42,8 +44,8 @@ const Login = () => {
             <TextInput
                 placeholder="Email"
                 style={styles.input}
-                value={email}
-                onChangeText={setEmail}
+                value={email} // display the current state
+                onChangeText={setEmail} // calls setEmail every keystroke, updating the state 
                 placeholderTextColor='#555'
                 keyboardType="email-address"
             />
