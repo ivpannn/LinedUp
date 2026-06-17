@@ -17,36 +17,38 @@ const Queuing = () => {
     const [alertShown, setAlertShown] = useState(false);
 
     // Fetch all queues
-    const fetchQueues = async (userId: string | null) => {
+    const fetchQueues = async (userId: string | null) => { // userId not from state, prevents a stale closure bug in setInterval
         try {
             const token = await getToken();
-            if (!token) return;
+            if (!token) return; //return no value, exist function
 
             // Get current restaurant from storage directly (don't rely on state here)
-            const restaurant = await getSelectedRestaurant();
-            const restaurantId = restaurant?.id;
+            const restaurant = await getSelectedRestaurant(); //null if not selected
+            const restaurantId = restaurant?.id; //optional chaining - return undefined if no restaurant selected (null)
 
-            const response = await API.get("/queue", {
-                headers: { Authorization: token },
-                params: restaurantId ? { restaurantId } : {},
+            const response = await API.get("/queue", { //sends GET request to server at /queue endpoint 
+                headers: { Authorization: token }, // header: Authorization sends JWT token for authentication
+                params: restaurantId ? { restaurantId } : {},  // restaurantId exists, the URL becomes /queue?restaurantId=rest_2,
+                //tells the server to filter for that restaurant only. if null send /queue no filter 
             });
 
-            const queueList = response.data.queue || [];
+            const queueList = response.data.queue || []; // is the JSON server send back. .queue is the array inside it 
+            // if .queue is undefined or null, use empty array
             setQueues(queueList);
 
             if (userId) {
                 const userQueue = queueList.find((q: any) =>
-                    q.userId === userId &&
+                    q.userId === userId && 
                     (q.status === "WAITING" || q.status === "SERVING")
-                );
+                ); // return undefined if not found
 
                 if (userQueue) {
-                    setMyQueue(userQueue);
-                    const position = getQueuePosition(queueList, userId);
-                    const newWaitTime = calculateWaitTime(position);
-                    setWaitTime(newWaitTime);
+                    setMyQueue(userQueue); //setMyQueue shows the green queue card.
+                    const position = getQueuePosition(queueList, userId); //getQueuePosition counts how many people are ahead in line and returns the position (1 means currently being served, 2 means next, etc)
+                    const newWaitTime = calculateWaitTime(position); // multiplies position by 3 minutes
+                    setWaitTime(newWaitTime); //updates the estimated wait shown on screen.
 
-                    if (newWaitTime === 5 && !alertShown) {
+                    if (newWaitTime === 5 && !alertShown) { // and if alert haven't already shown
                         Alert.alert("Almost your turn!", "Your queue is estimated in 5 minutes");
                         setAlertShown(true);
                     }
@@ -67,7 +69,7 @@ const Queuing = () => {
             return;
         }
 
-        if (!selectedRestaurant?.id) {
+        if (!selectedRestaurant?.id) { //if user navigate directly to the queue tab without picking a restaurant, show an alert and stop
             alert("Please select a restaurant from the Home screen first");
             return;
         }
@@ -78,11 +80,11 @@ const Queuing = () => {
 
             await API.post(
                 "/queue/join",
-                { restaurantId: selectedRestaurant.id },  // ← real DB id
+                { restaurantId: selectedRestaurant.id },  //POST request to the backend with the restaurant ID in the request body. The server create queue entry and return queue number
                 { headers: { Authorization: token } }
             );
 
-            await fetchQueues(currentUserId);
+            await fetchQueues(currentUserId); //refresh the queue list after joining
             alert("Joined queue");
         } catch (error: any) {
             alert(error.response?.data?.message || "Join queue failed");
@@ -92,8 +94,8 @@ const Queuing = () => {
     const leaveQueue = async () => {
         try {
             const token = await getToken();
-            await API.post("/queue/leave", {}, {
-                headers: { Authorization: token },
+            await API.post("/queue/leave", {}, { //POST to the backend with an empty body, the server finds the user's active queue entry using the token
+                headers: { Authorization: token }, // userId from JWT
             });
 
             setMyQueue(null);
@@ -113,7 +115,7 @@ const Queuing = () => {
     };
 
     // Decode JWT once on mount
-    useEffect(() => {
+    useEffect(() => { //validate the user first (token)
         const initializeUser = async () => {
             try {
                 const token = await getToken();
@@ -126,13 +128,13 @@ const Queuing = () => {
                         '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
                     ).join('')
                 );
-                const decoded = JSON.parse(jsonPayload);
+                const decoded = JSON.parse(jsonPayload); //convert stored string into a JavaScript object
                 const userId = decoded.userId;
 
-                setCurrentUserId(userId);
-                setIsAdmin(decoded.role === "ADMIN");
+                setCurrentUserId(userId); //get the userId after decode the JWT
+                setIsAdmin(decoded.role === "ADMIN"); //if user is admin 
 
-                await fetchQueues(userId);
+                await fetchQueues(userId); //pass param into fetchQueues, wait until the process finish 
             } catch (error) {
                 console.log("Error initializing user:", error);
                 router.replace("/(auth)/login");
@@ -141,8 +143,9 @@ const Queuing = () => {
         initializeUser();
     }, []);
 
-    // Re-read selected restaurant every time this screen is focused
-    // This fixes the race condition where storage is written just before navigation
+    // Re-read selected restaurant every time this screen is focused (when navigating back from the home screen)
+    // Re-read the selected restaurant so the title and queue list update for the new restaurant
+    // This fixes the race condition where storage is written just before navigation completes
     useFocusEffect(
         useCallback(() => {
             const loadRestaurant = async () => {
@@ -156,15 +159,17 @@ const Queuing = () => {
     );
 
     // Poll every 60s
-    useEffect(() => {
-        if (!currentUserId) return;
+    useEffect(() => { //do this after the screen appears, and again whenever these values change
+        if (!currentUserId) return; // userID hasn't been decoded from the token yet, skip
 
-        const interval = setInterval(() => {
-            fetchQueues(currentUserId);
+        const interval = setInterval(() => { //runs the given function repeatedly every 60000 milliseconds = 60 seconds = 1 minute
+            fetchQueues(currentUserId); // hits the server and refreshes the list
         }, 60000);
 
-        return () => clearInterval(interval);
+        return () => clearInterval(interval); //cleanup function the component unmount (user left screen)
+        //  it stops the interval so it doesn't keep running in the background and wasting battery.
     }, [currentUserId, alertShown]);
+    // the effect re-runs whenever either of these values changes.
 
     return (
         <View style={styles.container}>
@@ -197,7 +202,7 @@ const Queuing = () => {
             <FlatList
                 data={queues}
                 keyExtractor={(item) => item.id}
-                ListEmptyComponent={
+                ListEmptyComponent={ // show by Flatlist when data array is emtpy
                     <Text style={{ color: "#999", textAlign: "center", marginTop: 10 }}>
                         No one in queue yet
                     </Text>
@@ -205,7 +210,7 @@ const Queuing = () => {
                 renderItem={({ item }) => (
                     <View style={[
                         styles.queueItem,
-                        item.userId === currentUserId && styles.myQueueItem
+                        item.userId === currentUserId && styles.myQueueItem //if this list item belongs to the current user, apply the green left border style to highlight their position
                     ]}>
                         <Text style={styles.queueItemNumber}>#{item.queueNumber}</Text>
                         <Text style={styles.queueItemStatus}>{item.status}</Text>

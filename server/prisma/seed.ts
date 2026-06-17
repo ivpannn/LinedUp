@@ -7,12 +7,12 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
     const restaurants = [
-        { id: "rest_1", name: "Hai Di Lao", location: "Pavilion Bukit Jalil", cuisineType: "Hotpot", estimatedWait: 30 },
-        { id: "rest_2", name: "Shin zushi", location: "Jalan Jalil Jaya 7", cuisineType: "Sushi", estimatedWait: 45 },
-        { id: "rest_3", name: "Oriental Kopi", location: "Mid Valley", cuisineType: "Cafe", estimatedWait: 15 },
-        { id: "rest_4", name: "Village Park", location: "Petaling Jaya", cuisineType: "Nasi Lemak", estimatedWait: 25 },
-        { id: "rest_5", name: "Taisyu Yakiniku", location: "Taman Desa", cuisineType: "Japansese", estimatedWait: 36 },
-        { id: "rest_6", name: "Gepuklah", location: "Jalan SS 23/11, Taman Sea", cuisineType: "Nasi Lemak", estimatedWait: 55 },
+        { id: "rest_1", name: "Hai Di Lao", location: "Pavilion Bukit Jalil", cuisineType: "Hotpot" },
+        { id: "rest_2", name: "Shin zushi", location: "Jalan Jalil Jaya 7", cuisineType: "Sushi" },
+        { id: "rest_3", name: "Oriental Kopi", location: "Mid Valley", cuisineType: "Cafe" },
+        { id: "rest_4", name: "Village Park", location: "Petaling Jaya", cuisineType: "Nasi Lemak" },
+        { id: "rest_5", name: "Taisyu Yakiniku", location: "Taman Desa", cuisineType: "Japansese" },
+        { id: "rest_6", name: "Gepuklah", location: "Jalan SS 23/11, Taman Sea", cuisineType: "Nasi Lemak" },
     ];
 
     for (const r of restaurants) {

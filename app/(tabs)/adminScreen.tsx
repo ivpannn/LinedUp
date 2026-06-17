@@ -18,9 +18,9 @@ const AdminScreen = () => {
                 return;
             }
 
-            const response = await API.get("/admin/queues", {
+            const response = await API.get("/admin/queues", { //GET request to the endpoint to get all queue
                 headers: {
-                    Authorization: token,
+                    Authorization: token, //contain JWT token for authentication
                 },
             });
 
@@ -39,13 +39,13 @@ const AdminScreen = () => {
             const token = await getToken();
             if (!token) return;
 
-            await API.post("/admin/call-next", {}, {
+            await API.post("/admin/call-next", {}, { //POST with empty body
                 headers: {
                     Authorization: token,
                 },
             });
 
-            fetchQueues();
+            fetchQueues(); //refresh the list immediately so the card changes from waiting to serving 
             alert("Next queue called");
         } catch (error: any) {
             alert(error.response?.data?.message || "Failed to call next queue");
@@ -57,13 +57,13 @@ const AdminScreen = () => {
             const token = await getToken();
             if (!token) return;
 
-            await API.patch(`/admin/${id}/complete`, {}, {
+            await API.patch(`/admin/${id}/complete`, {}, { //PATCH request to a dynamic URL, the server know exactly which queue entry to mark as COMPLETED
                 headers: {
                     Authorization: token,
                 },
             });
 
-            fetchQueues();
+            fetchQueues(); //refresh the list
             alert("Queue marked as completed");
         } catch (error: any) {
             alert(error.response?.data?.message || "Failed to complete queue");
@@ -112,16 +112,17 @@ const AdminScreen = () => {
                             <Text style={styles.queueNumberText}>Queue #{item.queueNumber}</Text>
                             <Text style={styles.restaurantName}>
                                 {item.restaurant?.name ?? "Unknown Restaurant"}
+                                {/* ?? is the nullish coalescing operator - if restaurant?.name is null or underfined use "Unknown Restaurant" instead */}
                             </Text>
                             <Text style={[
                                 styles.statusText,
                                 item.status === "SERVING" ? styles.servingStatus : styles.waitingStatus
                             ]}>
-                                {item.status}
+                                {item.status} 
                             </Text>
                             <Text style={styles.userName}>{item.user?.name || "Unknown"}</Text>
                         </View>
-                        {item.status === "SERVING" && (
+                        {item.status === "SERVING" && ( // only show the Complete button on cards that are currently SERVING 
                             <Pressable style={styles.completeButton} onPress={() => completeQueue(item.id)}>
                                 <Text style={styles.buttonText}>Complete</Text>
                             </Pressable>

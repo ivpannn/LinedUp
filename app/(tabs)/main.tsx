@@ -1,6 +1,8 @@
 import RestaurantCard from "@/components/restaurantCard";
+import { API } from "@/src/services/api";
 import { setSelectedRestaurant } from "@/src/storage/selectedRestaurant";
 import { getToken, removeToken } from "@/src/storage/token";
+import { calculateWaitTime } from "@/src/utils/waitTimeCalculator";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -15,12 +17,12 @@ interface Restaurant {
 }
 
 const restaurant = [
-    { id: 'rest_1', image: require("../../assets/images/hdl-pav-bj.jpg"), name: 'Hai Di Lao', location: 'Pavilion Bukit Jalil', cuisineType: 'Hotpot', estimatedWait: 30 },
-    { id: 'rest_2', image: require("../../assets/images/shin-zushi.webp"), name: 'Shin zushi', location: 'Jalan Jalil Jaya 7', cuisineType: 'Sushi', estimatedWait: 45 },
-    { id: 'rest_3', image: require("../../assets/images/oriental-kopi.webp"), name: 'Oriental Kopi', location: 'Mid Valley', cuisineType: 'Cafe', estimatedWait: 55 },
-    { id: 'rest_4', image: require("../../assets/images/village-park.jpg"), name: 'Village Park', location: 'Petaling Jaya', cuisineType: 'Nasi Lemak', estimatedWait: 25 },
-    { id: "rest_5", image: require("../../assets/images/taisyu-yakiniku.webp"), name: "Taisyu Yakiniku", location: "Taman Desa", cuisineType: "Japansese", estimatedWait: 36 },
-    { id: "rest_6", image: require("../../assets/images/gepuklah.jpg"), name: "Gepuklah", location: "Jalan SS 23/11, Taman Sea", cuisineType: "Nasi Lemak", estimatedWait: 48 },
+    { id: 'rest_1', image: require("../../assets/images/hdl-pav-bj.jpg"), name: 'Hai Di Lao', location: 'Pavilion Bukit Jalil', cuisineType: 'Hotpot' },
+    { id: 'rest_2', image: require("../../assets/images/shin-zushi.webp"), name: 'Shin zushi', location: 'Jalan Jalil Jaya 7', cuisineType: 'Sushi' },
+    { id: 'rest_3', image: require("../../assets/images/oriental-kopi.webp"), name: 'Oriental Kopi', location: 'Mid Valley', cuisineType: 'Cafe' },
+    { id: 'rest_4', image: require("../../assets/images/village-park.jpg"), name: 'Village Park', location: 'Petaling Jaya', cuisineType: 'Nasi Lemak' },
+    { id: "rest_5", image: require("../../assets/images/taisyu-yakiniku.webp"), name: "Taisyu Yakiniku", location: "Taman Desa", cuisineType: "Japansese" },
+    { id: "rest_6", image: require("../../assets/images/gepuklah.jpg"), name: "Gepuklah", location: "Jalan SS 23/11, Taman Sea", cuisineType: "Nasi Lemak" },
 ];
 
 const Main = () => {
@@ -39,9 +41,11 @@ const Main = () => {
                     try {
                         const base64Url = token.split('.')[1];
                         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                        const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) => {
-                            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                        }).join(''));
+                        const jsonPayload = decodeURIComponent(
+                            atob(base64).split('').map((c) => {
+                                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                            }).join('')
+                        );
 
                         const decoded = JSON.parse(jsonPayload);
                         if (decoded.role === "ADMIN") {
@@ -50,14 +54,35 @@ const Main = () => {
                     } catch (error) {
                         console.log("Error decoding token:", error);
                     }
-                }
 
-                // Load restaurants
-                setRestaurants(restaurant);
+                    // Fetch the full queue list (all restaurants)
+                    try {
+                        const response = await API.get("/queue", {
+                            headers: { Authorization: token },
+                        });
+                        const queueList = response.data.queue || [];
+
+                        console.log("Queue List:", queueList); // Log the queue list to see its structure and contents
+
+                        // Fetch each restaurant, count how many active entries exist
+                        const merged: Restaurant[] = restaurant.map((r) => {
+                            const activeCount = queueList.filter((q: any) => q.restaurantId === r.id).length;
+
+                            return { ...r, estimatedWait: calculateWaitTime(activeCount + 1), };
+                        }); 
+
+                        setRestaurants(merged);
+                    } catch (error) {
+                        console.log("Error fetching queue list:", error);
+                        setRestaurants(restaurants.map(r => ({ ...r, estimatedWait: 0 }))
+                        );
+                    }
+                }
             } catch (error) {
                 console.log("Error loading restaurants:", error);
+                setRestaurants(restaurants.map(r => ({ ...r, estimatedWait: 0 })));
             } finally {
-                setLoading(false);
+                setLoading(false); //hides the loading text, runs in the finally block so it always runs even if there is an error
             }
         };
 
@@ -71,9 +96,9 @@ const Main = () => {
             return;
         }
 
-        // Store selected restaurant and navigate
+        // Store selected restaurant in AsyncStorage and navigate
         await setSelectedRestaurant({ id: restaurantId, name: restaurantName });
-        router.push("/(tabs)/queuing");
+        router.push("/(tabs)/queuing"); //.push() = added to history (user can go back), .replace() = removes history 
     };
 
 
@@ -93,8 +118,8 @@ const Main = () => {
             ) : (
                 <FlatList
                     data={restaurants}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
+                    keyExtractor={(item) => item.id} //gives each item a unique key - react uses this to track which items changed and only re-render those 
+                    renderItem={({ item }) => ( //each item in data, render this JSX
                         <View style={styles.cardContainer}>
                             <RestaurantCard
                                 restaurant={item}
