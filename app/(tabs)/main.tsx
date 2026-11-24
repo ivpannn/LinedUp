@@ -3,7 +3,7 @@ import { API } from "@/src/services/api";
 import { setSelectedRestaurant } from "@/src/storage/selectedRestaurant";
 import { getToken, removeToken } from "@/src/storage/token";
 import { calculateWaitTime } from "@/src/utils/waitTimeCalculator";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 

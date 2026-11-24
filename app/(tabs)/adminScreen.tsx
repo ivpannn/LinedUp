@@ -1,6 +1,6 @@
 import { API } from '@/src/services/api';
 import { getToken } from '@/src/storage/token';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from "expo-router";
 import { useEffect, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 

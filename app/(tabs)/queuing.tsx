@@ -2,8 +2,7 @@ import { API } from "@/src/services/api";
 import { clearSelectedRestaurant, getSelectedRestaurant } from "@/src/storage/selectedRestaurant";
 import { getToken, removeToken } from "@/src/storage/token";
 import { calculateWaitTime, getQueuePosition } from "@/src/utils/waitTimeCalculator";
-import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
