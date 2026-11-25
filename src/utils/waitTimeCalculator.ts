@@ -1,7 +1,7 @@
 // Calculate estimated wait time based on queue position
 export const calculateWaitTime = (queuePosition: number): number => {
-    // Assume each customer takes ~3 minutes
-    return Math.max(0, (queuePosition - 1) * 10); // .max(0), prevent negative wait times (0 * 3 = 0)
+    // Assume each customer takes ~10 minutes
+    return Math.max(0, (queuePosition - 1) * 10); // .max(0), prevent negative wait times (0 * 10 = 0)
 };
 
 // Get queue position for a specific user

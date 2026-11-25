@@ -32,6 +32,7 @@ export const joinQueue = async (req: AuthRequest, res: Response) => {
                 userId,
                 status: { in: ["WAITING", "SERVING"] },
                 restaurantId: { not: null },
+                joinedAt: { gte: getStartOfDay() },
             },
         });
 
@@ -45,6 +46,7 @@ export const joinQueue = async (req: AuthRequest, res: Response) => {
                 userId,
                 status: { in: ["WAITING", "SERVING"] },
                 restaurantId: null,
+                joinedAt: { lte: getStartOfDay() },
             },
             data: { status: "LEFT" },
         });
